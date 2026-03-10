@@ -3,7 +3,8 @@ package com.example.samlottie.rlottie
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.os.Build
+import android.graphics.Rect
+import android.os.Process
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.SystemClock
@@ -27,12 +28,22 @@ class RlottieView @JvmOverloads constructor(
     private var frameRate: Float = 60f
     private var currentFrame: Int = 0
     private var bitmap: Bitmap? = null
+    private val dstRect = Rect()
     private var running: Boolean = false
     private var assetName: String? = null
     private var loggedFailedHandle = false
     private var startTimeMs: Long = 0L
 
     private val targetFps = 60f
+    private var renderScale = 0.3f
+
+    init {
+        renderHandler.post {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY)
+        }
+        // Disable model cache to reduce memory usage.
+        NativeRlottie.configureModelCacheSize(0)
+    }
      private val renderRunnable = object : Runnable {
         override fun run() {
             if (!running || handle == 0L || bitmap == null || totalFrames <= 0) return
@@ -54,6 +65,13 @@ class RlottieView @JvmOverloads constructor(
             if (isAttachedToWindow) {
                 start()
             }
+        }
+    }
+
+    fun setRenderScale(scale: Float) {
+        renderScale = scale.coerceIn(0.3f, 1.0f)
+        if (width > 0 && height > 0 && assetName != null) {
+            loadAnimation(width, height)
         }
     }
 
@@ -86,6 +104,7 @@ class RlottieView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         if (w > 0 && h > 0 && assetName != null) {
+            dstRect.set(0, 0, w, h)
             loadAnimation(w, h)
         }
     }
@@ -125,7 +144,9 @@ class RlottieView @JvmOverloads constructor(
         totalFrames = NativeRlottie.getTotalFrames(handle).coerceAtLeast(1)
         frameRate = NativeRlottie.getFrameRate(handle).coerceAtLeast(1f)
         Log.d("RlottieView", "Loaded $asset frames=$totalFrames fps=$frameRate size=${w}x${h}")
-        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val rw = (w * renderScale).toInt().coerceAtLeast(1)
+        val rh = (h * renderScale).toInt().coerceAtLeast(1)
+        bitmap = Bitmap.createBitmap(rw, rh, Bitmap.Config.ARGB_8888)
         currentFrame = 0
         if (isAttachedToWindow) {
             start()
@@ -153,6 +174,6 @@ class RlottieView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         ensureHandle()
         super.onDraw(canvas)
-        bitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
+        bitmap?.let { canvas.drawBitmap(it, null, dstRect, null) }
     }
 }

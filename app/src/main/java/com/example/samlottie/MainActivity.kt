@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.samlottie.rlottie.RlottieView
@@ -29,6 +30,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LottieScreen() {
+    val configuration = LocalConfiguration.current
+    val minDp = minOf(configuration.screenWidthDp, configuration.screenHeightDp)
+    val stickerSize = (minDp * 0.6f).dp
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -37,9 +42,10 @@ fun LottieScreen() {
             factory = { context ->
                 RlottieView(context).apply {
                     setAnimationAsset("loading.json")
+                    setRenderScale(0.3f)
                 }
             },
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier.size(stickerSize)
         )
     }
 }

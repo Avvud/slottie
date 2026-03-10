@@ -5,8 +5,8 @@ project(rlottie_jni)
 set(RLOTTIE_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/rlottie)
 
 set(LOTTIE_MODULE OFF)
-set(LOTTIE_THREAD ON)
-set(LOTTIE_CACHE ON)
+set(LOTTIE_THREAD OFF)
+set(LOTTIE_CACHE OFF)
 set(LOTTIE_MODULE_PATH "rlottie-image-loader")
 
 configure_file(${RLOTTIE_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)

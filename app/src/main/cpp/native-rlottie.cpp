@@ -129,4 +129,14 @@ Java_com_example_samlottie_rlottie_NativeRlottie_destroy(
     lottie_animation_destroy(anim);
 }
 
+JNIEXPORT void JNICALL
+Java_com_example_samlottie_rlottie_NativeRlottie_configureModelCacheSize(
+    JNIEnv *env,
+    jclass,
+    jint cacheSize
+) {
+    if (cacheSize < 0) cacheSize = 0;
+    lottie_configure_model_cache_size(static_cast<size_t>(cacheSize));
+}
+
 }  // extern "C"

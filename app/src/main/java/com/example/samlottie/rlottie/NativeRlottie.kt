@@ -13,4 +13,5 @@ object NativeRlottie {
     external fun getFrameRate(handle: Long): Float
     external fun render(handle: Long, frame: Int, bitmap: Bitmap)
     external fun destroy(handle: Long)
+    external fun configureModelCacheSize(cacheSize: Int)
 }
